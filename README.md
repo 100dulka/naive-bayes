@@ -14,8 +14,8 @@ Utilizing the Naive Bayes Algorithm to Predict Reliable vs. Not-realiables news
 * Source and method of data collection is unknown
 
 ## Methodology
-1.) creating text corpus tm::Vcorpus
-2.) cleaning text tm::tm_map
+*1.) creating text corpus tm::Vcorpus
+*2.) cleaning text tm::tm_map
   * lower letters
   * remove: numbers, stopwords, punctuation, remove white space
   * steming words
