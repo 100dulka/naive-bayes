@@ -26,6 +26,7 @@ Utilizing the Naive Bayes Algorithm to Predict Reliable vs. Not-realiables news
 7.) applying the algorithm on test and train datasets
 
 ## Results
+i.e. accuracy only 71%
              | actual 
    predicted | notreliable |    reliable |   Row Total | 
 -------------|-------------|-------------|-------------|
@@ -39,6 +40,5 @@ Column Total |        2622 |        2578 |        5200 |
              |       0.504 |       0.496 |             | 
 -------------|-------------|-------------|-------------|
 
-i.e. accuracy only 71%
 
 
