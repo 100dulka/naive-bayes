@@ -1,0 +1,170 @@
+---
+title: "Naive Byes and Fake News" 
+author: "Jiri stodulka"
+date: "2/2/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/Users/jiristodulka/R/Machine Learning with R/Rep_Naive_Bayes_(04)")
+lapply(c("tm", "NLP","SnowballC", "wordcloud","e1071", "gmodels"), character.only = T, require)
+```
+
+```{r data import, include=FALSE}
+news_raw <- read_csv("news.csv")[-c(1,2,3)]
+```
+
+# Preparing Data
+```{r str}
+str(news_raw)
+```
+Label, the dummy for type of news, is numeric. We need to convert it into a factor, i.e. 1 stands for reliable news and 0 otherwise. 
+
+```{r}
+news_raw$label <- factor(news_raw$label, levels = c (1,0), labels = c("notreliable", "reliable"))
+```
+
+
+# Cleaning Plain Text
+Creat a collection of text, i.e. **corpus**. This goal is utilized by can be utilized by tm package and VCorpus.
+```{r}
+news_corpus <- VCorpus(VectorSource(news_raw$text))
+```
+
+
+## Lowercase transformation
+```{r Lowercase transformation}
+news_corpus_clean <- tm_map(news_corpus, content_transformer(tolower))
+rm(news_corpus)
+```
+
+## Remove Numbers
+```{r Remove Numbers}
+news_corpus_clean <- tm_map(news_corpus_clean, removeNumbers)
+```
+
+## Remove Stop Words
+```{r Remove Stop Words}
+news_corpus_clean <- tm_map(news_corpus_clean, removeWords, stopwords())
+```
+
+##Remove punctuation
+```{r}
+replacePunctuation <- function(x) { gsub("[[:punct:]]+", " ", x) }
+news_corpus_clean <- tm_map(news_corpus_clean, removePunctuation)
+```
+
+##Stemp document
+```{r Stemp document}
+news_corpus_clean <- tm_map(news_corpus_clean, stemDocument)
+
+```
+
+## Eliminate unneeded whitespace
+```{r Eliminate unneeded whitespace}
+news_corpus_clean <- tm_map(news_corpus_clean, stripWhitespace) 
+```
+
+#Document-term sparse matrix
+```{r}
+news_dtm <- DocumentTermMatrix(news_corpus_clean)
+```
+ $ nrow    : int 20800
+ $ ncol    : int 208730
+
+# Train and Test datasets
+```{r}
+news_dtm_train <- news_dtm[1:15600, ]
+news_dtm_test  <- news_dtm[15601:20800, ]
+```
+
+##Saving the Lables
+```{r # save the labels}
+news_train_labels <- news_raw[1:15600, ]$label
+news_test_labels  <- news_raw[15601:20800, ]$label
+```
+
+#Check the proportions
+```{r}
+prop.table(table(news_train_labels))
+prop.table(table(news_test_labels))
+
+```
+
+
+```{r}
+notreliable <- subset(news_raw, label == "notreliable")
+reliable  <- subset(news_raw, label == "reliable")
+```
+
+```{r}
+index_notrel <-  which(news_raw$label=="notreliable")
+index_rel <-  which(news_raw$label=="reliable")
+
+notreliable_clean_corp <- news_corpus_clean[index_notrel]
+reliable_clean_corp <- news_corpus_clean[index_rel]
+
+rm(index_notrel,index_rel)
+
+```
+
+```{r message=FALSE, warning=FALSE}
+corp_notrealiable <- tm_map(notreliable_clean_corp, PlainTextDocument)
+wordcloud(corp_notrealiable, max.words = 60, min.freq = 4500, scale = c(3,1), random.order = F)
+
+```
+
+```{r}
+corp_reliable <- tm_map(reliable_clean_corp, PlainTextDocument)
+wordcloud(corp_reliable, max.words = 60, min.freq = 4500,scale = c(3, 1), random.order = F)
+
+```
+
+
+# save frequently-appearing terms to a character vector
+```{r}
+news_freq_words <- findFreqTerms(news_dtm_train, 200)
+str(news_freq_words)
+```
+
+
+# create DTMs with only the frequent terms
+```{r}
+news_dtm_freq_train <- news_dtm_train[ , news_freq_words]
+news_dtm_freq_test <- news_dtm_test[ , news_freq_words]
+```
+
+# convert counts to a factor
+```{r}
+convert_counts <- function(x) {
+  x <- ifelse(x > 0, "Yes", "No")
+}
+```
+
+# apply() convert_counts() to columns of train/test data
+```{r}
+news_train <- apply(news_dtm_freq_train, MARGIN = 2, convert_counts)
+news_test  <- apply(news_dtm_freq_test, MARGIN = 2, convert_counts)
+```
+
+
+# Step 3: Training a model on the data
+```{r}
+news_classifier <- naiveBayes(news_train, news_train_labels, laplace = 1)
+```
+
+
+# Step 4: Evaluating model performance 
+```{r}
+news_test_pred <- predict(news_classifier, news_test)
+```
+
+
+```{r}
+CrossTable(news_test_pred, news_test_labels,
+           prop.chisq = FALSE, prop.t = FALSE, prop.r = FALSE,
+           dnn = c('predicted', 'actual'))
+```
+
+
