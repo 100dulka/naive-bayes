@@ -14,19 +14,20 @@ Utilizing the Naive Bayes Algorithm to Predict Reliable vs. Not-realiables news
 * Source and method of data collection is unknown
 
 ## Methodology
-*1.) creating text corpus tm::Vcorpus
-*2.) cleaning text tm::tm_map
+* creating text corpus tm::Vcorpus
+* cleaning text tm::tm_map
   * lower letters
   * remove: numbers, stopwords, punctuation, remove white space
   * steming words
-3.) creating sparse matrix tm::TermDocumentMatrix (DTMs)
-4.) creating test(75%) and train(25%) datasets
-5.) world clouds (reliable, fake)
-6.) filtereing DTMs for only frquent words
-7.) applying the algorithm on test and train datasets
+* creating sparse matrix tm::TermDocumentMatrix (DTMs)
+* creating test(75%) and train(25%) datasets
+* world clouds (reliable, fake)
+* filtereing DTMs for only frquent words
+* applying the algorithm on test and train datasets
 
 ## Results
 i.e. accuracy only 71%
+
              | actual 
    predicted | notreliable |    reliable |   Row Total | 
 -------------|-------------|-------------|-------------|
